@@ -1,0 +1,23 @@
+version: '3'
+services:
+  redis: 
+    image: ${REDIS_HOST}
+  node-app:
+    environment:
+      - REDIS_HOST
+      - PORT
+    build: 
+      context: .
+      target: prod
+    depends_on:
+      - ${REDIS_HOST}
+    ports:
+      - "${PORT}:${PORT}"
+  unit-test:
+    environment:
+      - REDIS_HOST
+    build: 
+      context: .
+      target: test
+    depends_on:
+      - ${REDIS_HOST}
