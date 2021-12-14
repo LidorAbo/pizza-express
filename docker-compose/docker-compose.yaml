@@ -7,8 +7,10 @@ services:
       - REDIS_HOST
       - PORT
     build: 
-      context: .
+      context: ../
       target: prod
+  
+    image: app
     depends_on:
       - ${REDIS_HOST}
     ports:
@@ -17,7 +19,8 @@ services:
     environment:
       - REDIS_HOST
     build: 
-      context: .
+      context: ../
       target: test
+    image: unit-test
     depends_on:
       - ${REDIS_HOST}
