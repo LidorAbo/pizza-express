@@ -5,7 +5,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 const generateId = require('./lib/generate-id');
-const hostname = process.env.HOST;
+const hostname = process.env.REDIS_HOST;
 const redis = require("redis");
 const client = redis.createClient({
     host: hostname,
