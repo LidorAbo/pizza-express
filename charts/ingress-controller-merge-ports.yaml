@@ -1,0 +1,14 @@
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: controller
+        ports:
+         - containerPort: 8081
+           hostPort: 8081
+
