@@ -1,0 +1,69 @@
+- hosts: localhost
+  connection : local
+  vars:
+    docker_repo: lidorabo/docker_repo
+    docker_compose_folder: docker-compose
+    scripts_folder: scripts/
+    image_tag: app
+  tasks:
+    - name: Install dependencies
+      ansible.builtin.shell: bash install.sh
+      args:
+        chdir: "{{ scripts_folder  }}"   
+    - name: Install python sdk if not installed
+      pip:
+        name: "{{ item.name  }}"
+        state: present
+      with_items:
+       - { name: docker}
+       - { name: docker-compose }
+    - name: Start minikube and configure ingress
+      ansible.builtin.shell: bash minikube.sh
+      args:
+          chdir: "{{ scripts_folder  }}"
+    - name: Creating redis, node-app and unit tests images
+      ansible.builtin.shell: |
+        eval $(minikube docker-env)
+        cd "{{ docker_compose_folder }}"
+        docker-compose build --parallel
+    - name: Running unit tests
+      ansible.builtin.shell: |
+        eval $(minikube docker-env)
+        cd "{{ docker_compose_folder }}"
+        export PORT=$(cat .env | tail -n 1 | cut -d '=' -f 2 )
+        export REDIS_HOST=$(cat .env | head -n 1 | cut -d '=' -f 2 )
+        docker-compose up -d $REDIS_HOST unit-test 
+      register: result
+      failed_when: result.rc != 0 
+    - name: Apply app and redis helm charts
+      ansible.builtin.shell: bash helm.sh
+      args:
+        chdir: "{{ scripts_folder  }}"
+      ignore_errors: yes
+    - name: Configure dns for ingress
+      ansible.builtin.shell: bash config_dns.sh
+      args:
+        chdir: "{{ scripts_folder  }}"
+    - name: Check access to node app from ingress 
+      uri:
+        url: "http://app.info:8081"
+        follow_redirects: none
+        method: GET
+      register: _result
+      until: _result.status == 200
+      retries: 720 # 720 * 5 seconds = 1hour (60*60/5)
+      delay: 5
+    - name: Push image to docker hub registry
+      ignore_errors: yes
+      ansible.builtin.shell: |
+        eval $(minikube docker-env)
+        docker login 2> /dev/null -u "{{ docker_user }}" -p "{{ docker_password }}"
+        docker tag "{{ image_tag }}" "{{ docker_repo  }}:latest"
+        docker push "{{ docker_repo }}:latest"
+      
+   
+      
+
+      
+    
+    
