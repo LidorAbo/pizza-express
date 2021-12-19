@@ -5,6 +5,7 @@
     docker_compose_folder: docker-compose
     scripts_folder: scripts/
     image_tag: app
+    helm_chart_efk: efk
   tasks:
     - name: Install dependencies
       ansible.builtin.shell: bash install.sh
@@ -19,6 +20,10 @@
        - { name: docker-compose }
     - name: Start minikube and configure ingress
       ansible.builtin.shell: bash minikube.sh
+      args:
+          chdir: "{{ scripts_folder  }}"
+    - name: Configure EFK stack for logging in centrelized location
+      ansible.builtin.shell: bash efk.sh
       args:
           chdir: "{{ scripts_folder  }}"
     - name: Creating redis, node-app and unit tests images

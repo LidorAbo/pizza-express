@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.elasticsearch.name }}
+  namespace: {{ .Values.elasticsearch.namespace}}
+spec:
+  selector:
+    matchLabels:
+      component: {{ .Values.elasticsearch.name }}
+  template:
+    metadata:
+      labels:
+       component: {{ .Values.elasticsearch.name }}
+    spec:
+      containers:
+        - name: {{ .Values.elasticsearch.name }}
+          image: "docker.elastic.co/{{ .Values.elasticsearch.name }}/{{ .Values.elasticsearch.name }}:{{  .Values.elasticsearch.version }}"
+          env:
+          - name: discovery.type
+            value: single-node
+          ports:
+            - name: http
+              containerPort: {{ .Values.elasticsearch.port }}
+              protocol: TCP
+          resources:
+            limits:
+               cpu: 500m
+               memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.elasticsearch.name }}
+  namespace: {{ .Values.elasticsearch.namespace  }}
+  labels: 
+    service: {{ .Values.elasticsearch.name }}
+spec:
+  type: NodePort
+  selector:
+    component: {{ .Values.elasticsearch.name }}
+  ports:
+    - port: {{ .Values.elasticsearch.port }}
+      targetPort: {{ .Values.elasticsearch.port }}
+      

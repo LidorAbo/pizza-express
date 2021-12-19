@@ -1,0 +1,12 @@
+elasticsearch:
+  name: elasticsearch
+  port: 9200
+  namespace: logging
+  version: 7.4.1
+fluentd: 
+  name: fluentd
+kibana:
+  name: kibana
+  namespace: logging
+  port: 5601
+  version: 7.4.1

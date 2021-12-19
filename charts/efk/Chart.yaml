@@ -1,0 +1,7 @@
+apiVersion: v2
+name: efk
+description: A Helm chart for EFK
+
+type: application
+
+version: 0.1.0

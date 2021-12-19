@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.kibana.name }}
+  namespace: {{ .Values.kibana.namespace  }}
+spec: 
+  selector:
+    matchLabels:
+      run: {{ .Values.kibana.name }} 
+  template:
+    metadata:
+      labels:
+        run: {{ .Values.kibana.name }}
+    spec:
+      containers:
+      - name: {{ .Values.kibana.name }}
+        image:  "docker.elastic.co/{{ .Values.kibana.name }}/{{ .Values.kibana.name }}:{{ .Values.kibana.version  }}"
+        env:
+        - name: ELASTIC_SEARCH_URL
+          value: "http://{{ .Values.elasticsearch.name  }}:{{ .Values.elasticsearch.port  }}"
+        - name: XPACK_SECURITY_ENABLED
+          value: "true"
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: {{ .Values.kibana.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kibana.name }}
+  namespace: {{ .Values.kibana.namespace  }}
+  labels:
+    service: {{ .Values.kibana.name }}
+spec:
+  type: NodePort
+  selector:
+    run: {{ .Values.kibana.name }}
+  ports:
+  - port: {{  .Values.kibana.port  }}
+    targetPort: {{  .Values.kibana.port  }}
